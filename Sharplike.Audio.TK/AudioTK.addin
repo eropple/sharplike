@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Addin id="Sharplike.Audio.TK" author="Large Russian Games" version="1.0">
+  <Runtime>
+    <Import assembly="Sharplike.Audio.TK.dll" />
+    <Import assembly="OpenTK.dll" />
+    <Import assembly="OpenTK.Compatibility.dll" />
+  </Runtime>
+
+  <Dependencies>
+    <Addin id="Sharplike.Core" version="1.0" />
+  </Dependencies>
+  
+  <Extension path="/Sharplike/Audio">
+    <Engine name="OpenTK Audio Engine" id="OpenTK" type="Sharplike.Audio.TK.OpenTKAudioEngine" />
+  </Extension>
+</Addin>

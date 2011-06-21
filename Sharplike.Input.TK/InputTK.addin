@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Addin id="Sharplike.Input.TK" author="Large Russian Games" version="1.0">
+  <Runtime>
+    <Import assembly="OpenTK.dll" />
+    <Import assembly="Sharplike.Input.TK.dll" />
+  </Runtime>
+
+  <Dependencies>
+    <Addin id="Sharplike.Core" version="1.0" />
+  </Dependencies>
+
+  <Extension path="/Sharplike/Input">
+    <Engine name="OpenTK Input Provider" id="OpenTK" type="Sharplike.Input.TK.OpenTKInputProvider" />
+  </Extension>
+</Addin>

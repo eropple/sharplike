@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Addin id="Sharplike.Core" author="Large Russian Games" version="1.0" isroot="true">
+  <Runtime>
+    <Import assembly="Sharplike.Core.dll" />
+  </Runtime>
+
+  <ExtensionPoint path="/Sharplike/Audio">
+    <ExtensionNode name="Engine" type="Mono.Addins.TypeExtensionNode" />
+  </ExtensionPoint>
+
+  <ExtensionPoint path="/Sharplike/Input">
+    <ExtensionNode name="Provider" type="Mono.Addins.TypeExtensionNode" />
+  </ExtensionPoint>
+
+  <ExtensionPoint path="/Sharplike/Rendering">
+    <ExtensionNode name="Engine" type="Mono.Addins.TypeExtensionNode" />
+  </ExtensionPoint>
+
+  <ExtensionPoint path="/Sharplike/Scripting">
+    <ExtensionNode name="Engine" type="Mono.Addins.TypeExtensionNode" />
+  </ExtensionPoint>
+
+
+
+  <Extension path="/Sharplike/Scripting">
+    <!--<Engine name="Python" id=".py" type="Sharplike.Core.Scripting.PythonScripting" />-->
+    <!--<Engine name="Ruby" id=".rb" type="Sharplike.Core.Scripting.RubyScripting" />-->
+  </Extension>
+</Addin>

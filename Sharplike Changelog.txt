@@ -1,0 +1,66 @@
+SHARPLIKE CHANGELOG - Version 0.4.0
+http://oss.largerussiangames.com
+
+
+Version 0.4.0
+-------------
+
+Features:
+
+-Many bugs in the core systems (audio, graphics, input, scripting) worked out. The API was heavily refactored.
+
+-Mapping system is (mostly) finished, using Pages (uniformly sized blocks) of Squares (tiles). An informal Flyweight pattern is recommended for Squares (by using static variables for unchanging data related to all squares of a specific type).
+
+-Caching system is implemented. Currently only "cold" caching (to-disk) is implemented; later we'll add a "warm" caching system for saving on CPU time while keeping the page in memory.
+
+-Scheduling system is implemented, with a number of scheduler types. The SingleThreadedScheduler is recommended for simpler games, such as Hacks and Bands, while the multithreaded schedulers (included primarily for advanced use) are more useful for large-scale, Dwarf Fortress-style games.
+
+-Entity system implemented (usable for both mobiles and items). Predominantly event-driven to enable fine-grained control.
+
+-Messaging system implemented, to send messages between entities and pages in a thread-safe manner (that works effectively with the multi-threaded schedulers).
+
+-Regions system implemented, for use in graphical displays. A Region is somewhat similar to a Windows Form control, in that it may be arbitrarily placed within the display window. They may be subclassed for your specific needs. (The map display is a Region, and can be manipulated as such.)
+
+-"Storylib" implemented: a library for maintaining relationships between entities. This is placed in the Utilities folder due to is greater level of decoupling from the Sharplike system itself.
+
+Contributors:
+
+-Sean Edwards (sean.edwards@largerussiangames.com)
+-Alex Karantza (alex.karantza@largerussiangames.com)
+-Ed Ropple (ed.ropple@largerussiangames.com)
+
+UPCOMING: Version 0.5 is a feature freeze for creating documentation and examples for your use; version 0.6 will bring Effects (visual tools and overlays, with some prebuilt examples), Fog of War, and Pathfinding libraries (with more possibly to come if we get ambitious).
+
+
+
+Version 0.2.0
+-------------
+
+First official release.
+
+Features:
+
+-Modular core system for audio, graphics, input, and scripting (scripting
+ currently disabled) using a provider model for all core systems.
+
+-OpenGL audio and video system, using OpenTK.
+
+-Keyboard and mouse input using WinForms. Command-based input mechanism;
+ games don't have to care about specific key bindings outside of an .ini
+ file.
+
+-Stepwise game loop system for roguelike game control.
+
+-Stack based state machine for control flow. Integrates with the game
+ loop automatically, without any special configuration.
+
+-Preliminary noise generation systems in Sharplike.Noise.
+
+-Very early start of a UI library to use in conjunction with the core
+ libraries. (Next release wll build this out significantly.)
+
+Contributors:
+
+-Sean Edwards (sean.edwards@largerussiangames.com)
+-Alex Karantza (alex.karantza@largerussiangames.com)
+-Ed Ropple (ed.ropple@largerussiangames.com)
