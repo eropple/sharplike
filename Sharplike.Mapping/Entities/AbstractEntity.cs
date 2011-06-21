@@ -1,5 +1,5 @@
 ﻿///////////////////////////////////////////////////////////////////////////////
-/// Sharplike, The Open Roguelike Library (C) 2010 Ed Ropple.               ///
+/// Sharplike, The Open Roguelike Library (C) 2010 2010 Ed Ropple.          ///
 ///                                                                         ///
 /// This code is part of the Sharplike Roguelike library, and is licensed   ///
 /// under the Common Public Attribution License (CPAL), version 1.0. Use of ///
@@ -30,6 +30,9 @@ namespace Sharplike.Mapping.Entities
 		{
 			this.MessageHandler.SetHandler("Reposition", Message_Reposition);
 			this.MessageHandler.SetHandler("Ping", Message_Ping);
+			this.MessageHandler.SetHandler("Move", Message_Move);
+
+			this.BackgroundColor = Color.Black;
 		}
 
         public void OnMessage(Message msg)
@@ -42,6 +45,7 @@ namespace Sharplike.Mapping.Entities
 			MessageHandler.AssertArgumentTypes(msg);
 		}
 
+		#region Message Handlers
 		[MessageArgument(0, typeof(Vector3))]
 		void Message_Reposition(Message msg)
 		{
@@ -53,11 +57,25 @@ namespace Sharplike.Mapping.Entities
 			Console.WriteLine("Pong");
 		}
 
-        public virtual Color BackgroundColor
-        {
-            get { return Color.Black; }
-        }
+		[MessageArgument(0, typeof(Direction))]
+		void Message_Move(Message msg)
+		{
+			Move((Direction)msg.Args[0]);
+		}
+		#endregion
 
+		/// <summary>
+		/// Gets or sets the background color that this entity will use.
+		/// </summary>
+		public virtual Color BackgroundColor
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
+		/// Gets the glyphs that will represent this entity.
+		/// </summary>
         public virtual Glyph[] Glyphs
         {
             get { return new Glyph[0]; }
@@ -68,16 +86,25 @@ namespace Sharplike.Mapping.Entities
             get { return false; }
         }
 
+		/// <summary>
+		/// Thread Safe. Gets or sets an entity's location on it's map.
+		/// This does NOT check that the entity's location will be on a valid square.
+		/// Use Move() for that.
+		/// </summary>
         public Vector3 Location
         {
             get { return loc; }
             set
             {
-                if (owner == null || owner.RepositionEntity(this, loc, value))
-                    loc = value;
+				if (owner != null)
+					Game.SendMessage(owner, "RepositionEntity", this, loc, value);
+				loc = value;
             }
         }
 
+		/// <summary>
+		/// Gets or sets the map that the entity exists in.
+		/// </summary>
         public AbstractMap Map
         {
             get { return owner; }
@@ -96,7 +123,7 @@ namespace Sharplike.Mapping.Entities
         }
 
 		/// <summary>
-		/// Makes an entity walk along the map world in a given direction.
+		/// Thread Safe. Makes an entity walk along the map world in a given direction.
 		/// This function will respect the passable state of the target map square.
 		/// </summary>
 		/// <param name="dir">The direction to walk in.</param>
@@ -144,15 +171,21 @@ namespace Sharplike.Mapping.Entities
 			}
 
 			Vector3 newloc = this.Location + w;
-			AbstractSquare sq = Map.GetSafeSquare(newloc);
-			if (sq != null && sq.IsPassable(DirectionUtils.OppositeDirection(dir)))
+
+			lock (Map)
 			{
-				this.Location = newloc;
-				return true;
+				AbstractSquare sq = Map.GetSafeSquare(newloc);
+				if (sq != null && sq.IsPassable(DirectionUtils.OppositeDirection(dir)))
+				{
+					this.Location = newloc;
+					sq.Teleport(DirectionUtils.OppositeDirection(dir), this);
+					return true;
+				}
 			}
 			return false;
 		}
 
+		
 		public void Dispose()
 		{
 			if (Map != null)

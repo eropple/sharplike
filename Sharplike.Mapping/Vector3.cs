@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-/// Sharplike, The Open Roguelike Library (C) 2010 Ed Ropple.               ///
+/// Sharplike, The Open Roguelike Library (C) 2010 2010 Ed Ropple.          ///
 ///                                                                         ///
 /// This code is part of the Sharplike Roguelike library, and is licensed   ///
 /// under the Common Public Attribution License (CPAL), version 1.0. Use of ///
@@ -19,6 +19,15 @@ namespace Sharplike.Mapping
 	[Serializable]
 	public struct Vector3 : IEquatable<Vector3>
 	{
+		public static readonly Vector3 Zero = new Vector3(0, 0, 0);
+
+		public static readonly Vector3 North = new Vector3(0, -1, 0);
+		public static readonly Vector3 South = new Vector3(0, 1, 0);
+		public static readonly Vector3 East = new Vector3(1, 0, 0);
+		public static readonly Vector3 West = new Vector3(-1, 0, 0);
+		public static readonly Vector3 Up = new Vector3(0, 0, 1);
+		public static readonly Vector3 Down = new Vector3(0, 0, -1);
+
 		public Vector3(int x, int y, int z)
 		{
 			this.x = x;
@@ -136,7 +145,7 @@ namespace Sharplike.Mapping
 			return this.x >= r.Left && this.x < r.Right && this.y >= r.Top && this.y < r.Bottom;
 		}
 
-		public bool IntersectsWith(Vector3 location, Vector3 range)
+		public bool IntersectsWithEllipse(Vector3 location, Vector3 range)
 		{
 			Vector3 test = this - location;
 			return
@@ -144,6 +153,13 @@ namespace Sharplike.Mapping
 				((double)(test.y * test.y) / (range.y * range.y)) +
 				((double)(test.z * test.z) / (range.z * range.z))
 				<= 1;
+		}
+
+		public bool IntersectsWithExtents(Vector3 location, Vector3 range)
+		{
+			Vector3 test = this - location;
+			return test.x < range.x && test.y < range.y && test.z < range.z && 
+				test.x >= 0 && test.y >= 0 && test.z >= 0;
 		}
 	}
 }

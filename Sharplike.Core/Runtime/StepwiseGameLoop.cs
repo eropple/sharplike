@@ -1,5 +1,5 @@
 ﻿///////////////////////////////////////////////////////////////////////////////
-/// Sharplike, The Open Roguelike Library (C) 2010 Ed Ropple.               ///
+/// Sharplike, The Open Roguelike Library (C) 2010 2010 Ed Ropple.          ///
 ///                                                                         ///
 /// This code is part of the Sharplike Roguelike library, and is licensed   ///
 /// under the Common Public Attribution License (CPAL), version 1.0. Use of ///
@@ -14,6 +14,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Windows.Forms;
 
 using Sharplike.Core.Input;
 
@@ -63,6 +64,7 @@ namespace Sharplike.Core.Runtime
 			{
 				foo = usercode(this);
 				Game.Process();
+				Application.DoEvents();
 			}
         }
 

@@ -7,7 +7,7 @@ namespace Sharplike.Core.Scheduling
 	public interface IScheduledTask
 	{
 		///////////////////////////////////////////////////////////////////////////////
-		/// Sharplike, The Open Roguelike Library (C) 2010 Ed Ropple.               ///
+		/// Sharplike, The Open Roguelike Library (C) 2010 2010 Ed Ropple.          ///
 		///                                                                         ///
 		/// This code is part of the Sharplike Roguelike library, and is licensed   ///
 		/// under the Common Public Attribution License (CPAL), version 1.0. Use of ///

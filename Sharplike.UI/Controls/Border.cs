@@ -1,5 +1,5 @@
 ﻿///////////////////////////////////////////////////////////////////////////////
-/// Sharplike, The Open Roguelike Library (C) 2010 Ed Ropple.               ///
+/// Sharplike, The Open Roguelike Library (C) 2010 2010 Ed Ropple.          ///
 ///                                                                         ///
 /// This code is part of the Sharplike Roguelike library, and is licensed   ///
 /// under the Common Public Attribution License (CPAL), version 1.0. Use of ///
@@ -33,7 +33,13 @@ namespace Sharplike.UI.Controls
             : base(extents, location)
         {
             Draw();
+			this.Resize += new EmptyDelegate(Border_Resize);
         }
+
+		void Border_Resize()
+		{
+			Draw();
+		}
 
         void Draw()
         {

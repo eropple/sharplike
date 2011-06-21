@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Addin id="Sharplike.Editlike" author="Large Russian Games" version="1.0" isroot="true">
+	<Runtime>
+		<Import assembly="Sharplike.Mapping.dll" />
+		<Import assembly="Sharplike.Editlike.exe" />
+	</Runtime>
+
+	<Dependencies>
+		<Addin id="Sharplike.Core" version="1.0" />
+	</Dependencies>
+
+	<ExtensionPoint path="/Sharplike/Squares">
+		<ExtensionNode name="Square" type="Sharplike.Editlike.EditorExtensionNode" />
+	</ExtensionPoint>
+
+	<ExtensionPoint path="/Sharplike/Entities">
+		<ExtensionNode name="Entity" type="Sharplike.Editlike.EditorExtensionNode" />
+	</ExtensionPoint>
+
+	<ExtensionPoint path="/Sharplike/Editlike/Tools">
+		<ExtensionNode name="Group" type="Sharplike.Editlike.MapTools.ToolGroupExtensionNode">
+			<ExtensionNode name="ToolSet" type="Mono.Addins.ExtensionNode">
+				<ExtensionNode name="Tool" type="Sharplike.Editlike.MapTools.MapToolExtensionNode" />
+			</ExtensionNode>
+			<ExtensionNode name="Tool" type="Sharplike.Editlike.MapTools.MapToolExtensionNode" />
+		</ExtensionNode>
+	</ExtensionPoint>
+
+	<Extension path="/Sharplike/Editlike/Tools">
+		<Group id="General">
+			<Tool id="Cursor" tooltip="Selection Tool"
+				  icon="Sharplike.Editlike.Icons.CursorTool.png"
+				  type="Sharplike.Editlike.MapTools.CursorTool" />
+		</Group>
+		<!-- <Group id="EntityTools"></Group> -->
+		<Group id="SquareTools">
+			<Tool id="PenTool" tooltip="Draw Squares" 
+				  icon="Sharplike.Editlike.Icons.PenTool.png" 
+				  type="Sharplike.Editlike.MapTools.PenTool" />
+			<ToolSet id="ShapeFill">
+				<Tool id="Line Tool" tooltip="Draw a straight line of squares"
+					  icon="Sharplike.Editlike.Icons.Line.bmp"
+					  type="Sharplike.Editlike.MapTools.LineTool" />
+				<Tool id="Rectangular Border" tooltip="Draw an empty rectangle of squares" tag="Empty"
+					  icon="Sharplike.Editlike.Icons.RectangleEmpty.bmp"
+					  type="Sharplike.Editlike.MapTools.RectangleTool" />
+				<Tool id="Rectangular Fill" tooltip="Draw a filled rectangle of squares" tag="Fill"
+					  icon="Sharplike.Editlike.Icons.RectangleFill.bmp"
+					  type="Sharplike.Editlike.MapTools.RectangleTool" />
+			</ToolSet>
+			<Tool id="Flood Squares" tooltip="Flood Squares"
+				  icon="Sharplike.Editlike.Icons.FloodTool.png"
+				  type="Sharplike.Editlike.MapTools.FloodTool" />
+		</Group>
+	</Extension>
+	
+	<Extension path="/Sharplike/Squares">
+		<Square type="Sharplike.Mapping.EmptySquare" id="EmptySquare" name="Empty Square"
+				tooltip="A regular 'ole everyday square of emptiness." gid="0" />
+		<Square type="Sharplike.Mapping.Squares.FloorSquare" id="FloorSquare" name="Floor"
+				tooltip="Not to be confused with 'Foursquare'" gid="250" />
+		<Square type="Sharplike.Mapping.Squares.WallSquare" id="WallSquare" name="Wall"
+				tooltip="An impassible wall" gid="197" />
+		<Square type="Sharplike.Mapping.Squares.StairsUpSquare" id="StairsUp" name="Stairs Up"
+				tooltip="Stairs up to the next z-level" gid="24" />
+		<Square type="Sharplike.Mapping.Squares.StairsDownSquare" id="StairsDown" name="Stairs Down"
+				tooltip="Stairs down to the next z-level" gid="25" />
+	</Extension>
+	
+	<Extension path="/Sharplike/Entities">
+
+	</Extension>
+</Addin>

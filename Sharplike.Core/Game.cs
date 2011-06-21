@@ -1,5 +1,5 @@
 ﻿///////////////////////////////////////////////////////////////////////////////
-/// Sharplike, The Open Roguelike Library (C) 2010 Ed Ropple.               ///
+/// Sharplike, The Open Roguelike Library (C) 2010 2010 Ed Ropple.          ///
 ///                                                                         ///
 /// This code is part of the Sharplike Roguelike library, and is licensed   ///
 /// under the Common Public Attribution License (CPAL), version 1.0. Use of ///
@@ -244,6 +244,8 @@ namespace Sharplike.Core
             if (Game.inputSystem.Provider != null)
                 throw new InvalidOperationException("Game.SetInputSystem() may only be called once.");
             TypeExtensionNode node = (TypeExtensionNode)AddinManager.GetExtensionNode(String.Format("/Sharplike/Input/{0}", sys));
+			if (node == null)
+				throw new ArgumentException("Specified input system could not be found.", "sys");
             InputSystem.Provider = (AbstractInputProvider)node.CreateInstance();
         }
 
@@ -255,7 +257,9 @@ namespace Sharplike.Core
         {
             if (Game.renderSystem != null)
                 throw new InvalidOperationException("Game.SetRenderSystem() may only be called once.");
-            TypeExtensionNode node = (TypeExtensionNode)AddinManager.GetExtensionNode(String.Format("/Sharplike/Rendering/{0}", sys));
+			TypeExtensionNode node = (TypeExtensionNode)AddinManager.GetExtensionNode(String.Format("/Sharplike/Rendering/{0}", sys));
+			if (node == null)
+				throw new ArgumentException("Specified render system could not be found.", "sys");
             RenderSystem = (AbstractRenderSystem)node.CreateInstance();
         }
 
@@ -268,7 +272,9 @@ namespace Sharplike.Core
             if (Game.audioSystem != null)
                 throw new InvalidOperationException("Game.SetAudioSystem() may only be called once.");
             ExtensionNodeList en = AddinManager.GetExtensionNodes("/Sharplike/Audio");
-            TypeExtensionNode node = (TypeExtensionNode)AddinManager.GetExtensionNode(String.Format("/Sharplike/Audio/{0}", sys));
+			TypeExtensionNode node = (TypeExtensionNode)AddinManager.GetExtensionNode(String.Format("/Sharplike/Audio/{0}", sys));
+			if (node == null)
+				throw new ArgumentException("Specified audio system could not be found.", "sys");
             AudioSystem = (AbstractAudioEngine)node.CreateInstance();
         }
 
@@ -289,6 +295,27 @@ namespace Sharplike.Core
                 Game.OnGameTermination(null, internedEventArg);
         }
 
+		/// <summary>
+		/// Starts the game's processing and immediately returns. For expert users only!
+		/// </summary>
+		public static void Run()
+		{
+			if (Scheduler == null)
+				Scheduler = new SingleThreadedScheduler();
+
+			if (Game.OnGameInitialization != null)
+				Game.OnGameInitialization(null, internedEventArg);
+		}
+
+		/// <summary>
+		/// Stops the game from running. For expert users only!
+		/// </summary>
+		public static void Stop()
+		{
+			if (Game.OnGameTermination != null)
+				Game.OnGameTermination(null, internedEventArg);
+		}
+
         /// <summary>
         /// Processes the game's core subsystems. Game function should not be called except by expert users.
         /// </summary>
@@ -306,8 +333,16 @@ namespace Sharplike.Core
                 RenderSystem.Process();
 
 			++Game.Time;
-			post.PumpMessages();
+			PumpMessages();
         }
+
+		/// <summary>
+		/// Pumps game messages. For expert users only!
+		/// </summary>
+		public static void PumpMessages()
+		{
+			post.PumpMessages();
+		}
 
 		/// <summary>
 		/// Processes a single step of game code. This will be called every frame for realtime games. 
@@ -436,9 +471,13 @@ namespace Sharplike.Core
 
             if (AudioSystem != null)
                 AudioSystem.Dispose();
+			
+			if (InputSystem.Provider != null)
+				InputSystem.Provider.Dispose();
 
-            InputSystem.Provider.Dispose();
-            RenderSystem.Dispose();
+			if (RenderSystem != null)
+				RenderSystem.Dispose();
+
 			if (Game.OnGameTermination != null)
 				Game.OnGameTermination(null, Game.internedEventArg);
 			Game.Terminated = true;

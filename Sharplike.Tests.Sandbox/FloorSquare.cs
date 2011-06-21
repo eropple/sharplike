@@ -1,5 +1,5 @@
 ﻿///////////////////////////////////////////////////////////////////////////////
-/// Sharplike, The Open Roguelike Library (C) 2010 Ed Ropple.               ///
+/// Sharplike, The Open Roguelike Library (C) 2010 2010 Ed Ropple.          ///
 ///                                                                         ///
 /// This code is part of the Sharplike Roguelike library, and is licensed   ///
 /// under the Common Public Attribution License (CPAL), version 1.0. Use of ///
@@ -33,11 +33,6 @@ namespace Sharplike.Tests.Sandbox
             {
                 return FloorSquare.glyphs;
             }
-        }
-
-        public FloorSquare(Int32 x, Int32 y, Int32 z)
-            : base(x, y, z)
-        {
         }
     }
 }

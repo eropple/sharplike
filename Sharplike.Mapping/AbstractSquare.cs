@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-/// Sharplike, The Open Roguelike Library (C) 2010 Ed Ropple.               ///
+/// Sharplike, The Open Roguelike Library (C) 2010 2010 Ed Ropple.          ///
 ///                                                                         ///
 /// This code is part of the Sharplike Roguelike library, and is licensed   ///
 /// under the Common Public Attribution License (CPAL), version 1.0. Use of ///
@@ -14,6 +14,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using Sharplike.Mapping.Entities;
 
 using Sharplike.Core.Rendering;
 
@@ -22,9 +23,8 @@ namespace Sharplike.Mapping
 	[Serializable]
 	public abstract class AbstractSquare : IGlyphProvider
 	{
-		public readonly Vector3 Position;
-
-		public virtual Boolean IsPassable(Direction fromDirection) { return true; }
+		public virtual Boolean IsPassable(Direction fromDirection) { return false; }
+		public virtual Boolean Teleport(Direction fromDirection, AbstractEntity newLocation) { return false; }
 		public virtual Color BackgroundColor { get { return Color.Black; } }
 
 		private static Glyph[] glyphs = { };
@@ -36,28 +36,21 @@ namespace Sharplike.Mapping
 			}
 		}
 
-		public AbstractSquare(Int32 x, Int32 y)
-		{
-			Position = new Vector3(x, y, 0);
-		}
-		public AbstractSquare(Point p)
-		{
-			Position = new Vector3(p);
-		}
-		public AbstractSquare(Int32 x, Int32 y, Int32 z)
-		{
-			Position = new Vector3(x, y, z);
-		}
-		public AbstractSquare(Vector3 v)
-		{
-			Position = v;
-		}
-
-
-        public bool Dirty
+        public virtual bool Dirty
         {
-            get;
-            private set;
+			get { return false; }
         }
+
+		public virtual AbstractMap Map
+		{
+			get { return null; }
+			set { }
+		}
+
+		public virtual Vector3 Location
+		{
+			get { return Vector3.Zero; }
+			set { }
+		}
     }
 }

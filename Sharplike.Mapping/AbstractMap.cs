@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-/// Sharplike, The Open Roguelike Library (C) 2010 Ed Ropple.               ///
+/// Sharplike, The Open Roguelike Library (C) 2010 2010 Ed Ropple.          ///
 ///                                                                         ///
 /// This code is part of the Sharplike Roguelike library, and is licensed   ///
 /// under the Common Public Attribution License (CPAL), version 1.0. Use of ///
@@ -48,6 +48,7 @@ namespace Sharplike.Mapping
 
 			MessageHandler.SetHandler("LookAt", Message_LookAt);
 			MessageHandler.SetHandler("ViewFrom", Message_ViewFrom);
+			MessageHandler.SetHandler("RepositionEntity", Message_RepositionEntity);
 		}
 
 		#region Message Handler Functions
@@ -61,6 +62,14 @@ namespace Sharplike.Mapping
 		void Message_ViewFrom(Message m)
 		{
 			ViewFrom((Vector3)m.Args[0]);
+		}
+
+		[MessageArgument(0, typeof(AbstractEntity))]
+		[MessageArgument(1, typeof(Vector3))]
+		[MessageArgument(2, typeof(Vector3))]
+		void Message_RepositionEntity(Message m)
+		{
+			RepositionEntity((AbstractEntity)m.Args[0], (Vector3)m.Args[1], (Vector3)m.Args[2]);
 		}
 		#endregion
 
@@ -77,6 +86,14 @@ namespace Sharplike.Mapping
 			f.Serialize(file, this);
 		}
 
+		/// <summary>
+		/// Get operations are thread safe. Set operations are not.
+		/// Gets or sets the square to be used at a particular map coordinate.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="z"></param>
+		/// <returns>The square at the specified coordinate.</returns>
 		public virtual AbstractSquare this[Int32 x, Int32 y, Int32 z]
 		{
 			get
@@ -90,6 +107,9 @@ namespace Sharplike.Mapping
 			}
 		}
 
+		/// <summary>
+		/// Thread safe. Gets the size of pages that the map uses.
+		/// </summary>
 		public Vector3 PageSize
 		{
 			get
@@ -98,6 +118,9 @@ namespace Sharplike.Mapping
 			}
 		}
 
+		/// <summary>
+		/// Thread safe. Gets the current position and size of the viewport.
+		/// </summary>
 		public Rectangle Viewport
 		{
 			get
@@ -163,8 +186,8 @@ namespace Sharplike.Mapping
 		public AbstractSquare GetSquare(AbstractPage p, Vector3 offset)
 		{
 			Vector3 npos = new Vector3(p.address.x * pageSize.x + offset.x,
-									   p.address.y * pageSize.y + offset.y,
-									   p.address.z * pageSize.z + offset.z);
+										   p.address.y * pageSize.y + offset.y,
+										   p.address.z * pageSize.z + offset.z);
 			return GetSquare(npos);
 		}
 
@@ -188,20 +211,76 @@ namespace Sharplike.Mapping
 			}
 
 			Pages[addr].SetSquare(newoff.x, newoff.y, newoff.z, square);
+
+			if (location.z == view.z)
+			{
+				if (Viewport.Contains(new Point(location.x, location.y)))
+				{
+					InvalidateTiles(new Rectangle(location.x - view.x, location.y - view.y, 1, 1));
+				}
+			}
+
+			if (square != null)
+			{
+				square.Map = this;
+				square.Location = location;
+			}
 		}
 
+		/// <summary>
+		/// Thread safe. Get the square at the specified map location.
+		/// </summary>
+		/// <param name="location">The coordinates on the map to fetch the square from.</param>
+		/// <returns>The square if one exists, or null if no square has been assigned there.</returns>
 		public AbstractSquare GetSafeSquare(Vector3 location)
 		{
 			Vector3 addr;
 			Vector3 newoff;
-			Vector3.Divide(location, this.pageSize, out addr, out newoff);
-			
-            AbstractPage p;
-            if (!Pages.TryGetValue(addr, out p))
-                return null;
-            return p.GetSquare(newoff.x, newoff.y, newoff.z);
+
+			lock (this)
+			{
+				Vector3.Divide(location, this.pageSize, out addr, out newoff);
+
+				AbstractPage p;
+				if (!Pages.TryGetValue(addr, out p))
+					return null;
+				return p.GetSquare(newoff.x, newoff.y, newoff.z);
+			}
 		}
 
+
+		public Vector3 GetVisibleSquareLocation(AbstractSquare square)
+		{
+			lock (this)
+			{
+				foreach (AbstractPage page in this.GetPagesInRange(this.View, 
+					new Vector3(this.Viewport.Width, this.Viewport.Height, 1)))
+				{
+					for (int y = 0; y < pageSize.y; ++y)
+					{
+						for (int x = 0; x < pageSize.x; ++x)
+						{
+							Vector3 location = new Vector3(x, y, this.View.z);
+							if (page[location].Equals(square))
+								return location;
+						}
+					}
+				}
+			}
+			return Vector3.Zero;
+		}
+
+		public Vector3 View
+		{
+			get { return view; }
+			set { ViewFrom(value); }
+		}
+
+		/// <summary>
+		/// Sets the viewport to look at a specific entity on the map.
+		/// This will center the entity on the screen.
+		/// </summary>
+		/// <param name="ent">The entity to view from.</param>
 		public void ViewFrom(AbstractEntity ent)
         {
             int x = ent.Location.x - (Size.Width / 2);
@@ -210,8 +289,18 @@ namespace Sharplike.Mapping
             ViewFrom(new Vector3(x, y, z));
         }
 
+		/// <summary>
+		/// Sets the viewport to a specific location on the map.
+		/// </summary>
+		/// <param name="nView">The map coordinates of the top-left most square to view from.</param>
 		public void ViewFrom(Vector3 nView) { this.ViewFrom(nView, false); }
 
+		/// <summary>
+		/// Sets the viewport to a specific location on the map.
+		/// </summary>
+		/// <param name="nView">The coordinates of the top-left most square to view from.</param>
+		/// <param name="forceRender">Whether or not to force a redraw of the viewport.
+		/// This only has an effect when the viewport doesn't change.</param>
 		public void ViewFrom(Vector3 nView, Boolean forceRender)
 		{
 			if (nView.Equals(view) == false || forceRender == true)
@@ -241,9 +330,9 @@ namespace Sharplike.Mapping
 							if (gx % 2 != 0 && gy % 2 == 0) n = 196; // -
 							if (gx % 2 == 0 && gy % 2 != 0) n = 179; // |
 
-                            this.RegionTiles[x, y].AddGlyphProvider(new ErrorSquare(x, y, n));
+                            this.RegionTiles[x, y].AddGlyphProvider(new ErrorSquare(n));
 #else
-                            this.RegionTiles[x, y].AddGlyphProvider(new EmptySquare(x, y, 0));
+                            this.RegionTiles[x, y].AddGlyphProvider(new EmptySquare());
 #endif
 						}
 
@@ -385,28 +474,62 @@ namespace Sharplike.Mapping
 			return false;
 		}
 
-		public AbstractEntity[] EntitiesInRange(Vector3 location, Vector3 range)
+		/// <summary>
+		/// Thread safe. Gets all entities within a specified distance from a specified point.
+		/// </summary>
+		/// <param name="location">The center of the extents to search.</param>
+		/// <param name="range">The ellipsoid extents to search.</param>
+		/// <returns>An array of all entities found within the specified extents.</returns>
+		public AbstractEntity[] EntitiesInElipticalRange(Vector3 location, Vector3 range)
 		{
 			List<AbstractEntity> ret = new List<AbstractEntity>();
-
-			Vector3 topleft = location - range;
-			Vector3 extents = (range * 2);
-			foreach (AbstractPage p in GetPagesInRange(topleft, extents))
+			lock (this)
 			{
-				foreach (AbstractEntity ent in p.Entities)
+				Vector3 topleft = location - range;
+				Vector3 extents = (range * 2);
+				foreach (AbstractPage p in GetPagesInRange(topleft, extents))
 				{
-					if (ent.Location.IntersectsWith(location, range))
+					foreach (AbstractEntity ent in p.Entities)
 					{
-						ret.Add(ent);
+						if (ent.Location.IntersectsWithEllipse(location, range))
+						{
+							ret.Add(ent);
+						}
 					}
 				}
 			}
-
 			return ret.ToArray();
 		}
 
 		/// <summary>
-		/// Broadcasts a messages to all entities within a given range from the specified point.
+		/// Thread safe. Gets all entities within a specified distance from a specified point.
+		/// </summary>
+		/// <param name="location">The center of the extents to search.</param>
+		/// <param name="range">The rectangular extents to search.</param>
+		/// <returns>An array of all entities found within the specified extents.</returns>
+		public AbstractEntity[] EntitiesInRectangularRange(Vector3 location, Vector3 range)
+		{
+			List<AbstractEntity> ret = new List<AbstractEntity>();
+			lock (this)
+			{
+				Vector3 topleft = location - range;
+				Vector3 extents = (range * 2);
+				foreach (AbstractPage p in GetPagesInRange(topleft, extents))
+				{
+					foreach (AbstractEntity ent in p.Entities)
+					{
+						if (ent.Location.IntersectsWithExtents(location, range))
+						{
+							ret.Add(ent);
+						}
+					}
+				}
+			}
+			return ret.ToArray();
+		}
+
+		/// <summary>
+		/// Thread Safe. Broadcasts a messages to all entities within a given range from the specified point.
 		/// </summary>
 		/// <param name="location">The center of the ellipsoid to broadcast to.</param>
 		/// <param name="range">The extents of the ellipsoid to broadcast within.</param>
@@ -418,7 +541,7 @@ namespace Sharplike.Mapping
 		}
 
 		/// <summary>
-		/// Broadcasts a messages to all entities within a given range from the specified point.
+		/// Thread Safe. Broadcasts a messages to all entities within a given range from the specified point.
 		/// </summary>
 		/// <param name="location">The center of the ellipsoid to broadcast to.</param>
 		/// <param name="range">The extents of the ellipsoid to broadcast within.</param>
@@ -427,7 +550,7 @@ namespace Sharplike.Mapping
 		/// <returns>All entities that received the message.</returns>
 		public AbstractEntity[] BroadcastMessage(Vector3 location, Vector3 range, String message, params Object[] args)
 		{
-			AbstractEntity[] ents = EntitiesInRange(location, range);
+			AbstractEntity[] ents = EntitiesInElipticalRange(location, range);
 
 			foreach (AbstractEntity ent in ents)
 			{
@@ -459,7 +582,7 @@ namespace Sharplike.Mapping
 		/// <returns>The entity that received the message, or null if no other entity existed within the range.</returns>
 		public AbstractEntity BroadcastToNearest(Vector3 location, Vector3 maxrange, String message, params Object[] args)
 		{
-			List<AbstractEntity> ents = new List<AbstractEntity>(EntitiesInRange(location, maxrange));
+			List<AbstractEntity> ents = new List<AbstractEntity>(EntitiesInElipticalRange(location, maxrange));
 			ents.Sort(delegate(AbstractEntity a, AbstractEntity b)
 			{
 				return a.Location.SquaredDistanceTo(location) > b.Location.SquaredDistanceTo(location) ? 1 : -1;
@@ -493,7 +616,7 @@ namespace Sharplike.Mapping
 		/// <returns>The entity that received the message, or null if no other entity existed within the range.</returns>
 		public AbstractEntity BroadcastToNearest(Vector3 location, Vector3 maxrange, AbstractEntity exclude, String message, params Object[] args)
 		{
-			List<AbstractEntity> ents = new List<AbstractEntity>(EntitiesInRange(location, maxrange));
+			List<AbstractEntity> ents = new List<AbstractEntity>(EntitiesInElipticalRange(location, maxrange));
 			ents.Remove(exclude);
 			ents.Sort(delegate(AbstractEntity a, AbstractEntity b)
 			{

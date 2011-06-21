@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-/// Sharplike, The Open Roguelike Library (C) 2010 Ed Ropple.               ///
+/// Sharplike, The Open Roguelike Library (C) 2010 2010 Ed Ropple.          ///
 ///                                                                         ///
 /// This code is part of the Sharplike Roguelike library, and is licensed   ///
 /// under the Common Public Attribution License (CPAL), version 1.0. Use of ///
@@ -34,26 +34,36 @@ namespace Sharplike.Frontend.Rendering
 	public class TKWindow : AbstractWindow
 	{
 
-        public TKForm Form
-        {
-            get;
-            private set;
-        }
+		private TKForm form;
 		private int paletteId;
 
-		public TKWindow(Size displayDimensions, GlyphPalette palette)
+		public readonly TKGLControl Control = new TKGLControl();
+
+		public TKWindow(Size displayDimensions, GlyphPalette palette, Control context)
 			: base(displayDimensions, palette)
 		{
+			if (context == null)
+			{
+				form = new TKForm();
+				form.ClientSize = displayDimensions;
+				form.FormClosing += new FormClosingEventHandler(Form_FormClosing);
+				form.Show();
 
-			Form = new TKForm(new TKDisplayFunc(Setup),
-									 new TKDisplayFunc(Render),
-									 new TKResizeFunc(Resize)
-									 );
-			Form.FormBorderStyle = FormBorderStyle.FixedSingle;
-			Form.MaximizeBox = false;
-			Form.ClientSize = displayDimensions;
-			Form.FormClosing += new FormClosingEventHandler(Form_FormClosing);
-			Form.Show();
+				context = form;
+			}
+
+			context.SuspendLayout();
+			Control.Dock = DockStyle.Fill;
+			Control.BackColor = Color.Blue;
+			Control.VSync = false;
+			Control.Resize += new EventHandler(Control_Resize);
+			Control.Paint += new PaintEventHandler(Control_Paint);
+
+			Control.Location = new Point(0, 0);
+			Control.Size = context.ClientSize;
+
+			context.Controls.Add(Control);
+			context.ResumeLayout(false);
 
 			paletteId = GL.GenTexture();
 			Bitmap bmp = palette.SourceBitmap;
@@ -67,6 +77,33 @@ namespace Sharplike.Frontend.Rendering
 
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+
+			base.Resize += new EmptyDelegate(TKWindow_Resize);
+			this.WindowSize = Control.Size;
+
+			GL.ClearColor(0.1f, 0.2f, 0.5f, 0.0f);
+			GL.Disable(EnableCap.DepthTest);
+			GL.Disable(EnableCap.CullFace);
+		}
+
+		void TKWindow_Resize()
+		{
+			GL.Viewport(0, 0, Control.ClientSize.Width, Control.ClientSize.Height);
+			GL.MatrixMode(MatrixMode.Projection);
+			GL.LoadIdentity();
+			GL.Ortho(0, WindowSize.Width, WindowSize.Height, 0, 0, 1);
+		}
+
+		void Control_Paint(object sender, PaintEventArgs e)
+		{
+			Control.MakeCurrent();
+			Render();
+			Control.SwapBuffers();
+		}
+
+		void Control_Resize(object sender, EventArgs e)
+		{
+			this.WindowSize = Control.ClientSize;
 		}
 
 		void Form_FormClosing(object sender, FormClosingEventArgs e)
@@ -78,27 +115,6 @@ namespace Sharplike.Frontend.Rendering
 			Game.InputSystem.WindowCommand("OnClosing");
 		}
 
-		private void Setup()
-		{
-			GL.ClearColor(0.1f, 0.2f, 0.5f, 0.0f);
-			GL.Disable(EnableCap.DepthTest);
-			GL.Disable(EnableCap.CullFace);
-		}
-
-		private new void Resize(int Width, int Height)
-		{
-
-            Int32 tileCols = this.DisplayDimensions.Width / this.GlyphPalette.GlyphDimensions.Width;
-            Int32 tileRows = this.DisplayDimensions.Height / this.GlyphPalette.GlyphDimensions.Height;
-
-            base.Size = new Size(tileCols, tileRows);
-			GL.MatrixMode(MatrixMode.Projection);
-			GL.LoadIdentity();
-			GL.Ortho(0, Width, Height, 0, 0, 1);
-		}
-
-
-
 		private void Render()
 		{
 			GL.MatrixMode(MatrixMode.Modelview);
@@ -108,9 +124,9 @@ namespace Sharplike.Frontend.Rendering
 			Int32 w = this.GlyphPalette.GlyphDimensions.Width;
 			Int32 h = this.GlyphPalette.GlyphDimensions.Height;
 
-			for (Int32 x = 0; x < this.TileDimensions.Width; x++)
+			for (Int32 x = 0; x < this.Size.Width; x++)
 			{
-				for (Int32 y = 0; y < this.TileDimensions.Height; y++)
+				for (Int32 y = 0; y < this.Size.Height; y++)
 				{
 					DisplayTile tile = this.tiles[x, y];
 
@@ -178,14 +194,13 @@ namespace Sharplike.Frontend.Rendering
 
 		protected override void WindowTitleChange()
 		{
-			Form.Text = this.windowTitle.ToString();
+			
 		}
 
 		public override void Update()
 		{
             base.Update();
-			Form.glControl1.Refresh();
-			Application.DoEvents();
+			Control.Refresh();
 		}
     }
 }

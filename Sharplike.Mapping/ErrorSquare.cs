@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-/// Sharplike, The Open Roguelike Library (C) 2010 Ed Ropple.               ///
+/// Sharplike, The Open Roguelike Library (C) 2010 2010 Ed Ropple.          ///
 ///                                                                         ///
 /// This code is part of the Sharplike Roguelike library, and is licensed   ///
 /// under the Common Public Attribution License (CPAL), version 1.0. Use of ///
@@ -32,7 +32,7 @@ namespace Sharplike.Mapping
 			}
 		}
 		
-		public ErrorSquare (Int32 x, Int32 y, Int32 g) : base(x,y)
+		public ErrorSquare (Int32 g)
 		{
 			glyphs = new Glyph[1];
 			glyphs[0] = new Glyph(g, Color.Red);

@@ -1,5 +1,5 @@
 ﻿///////////////////////////////////////////////////////////////////////////////
-/// Sharplike, The Open Roguelike Library (C) 2010 Ed Ropple.               ///
+/// Sharplike, The Open Roguelike Library (C) 2010 2010 Ed Ropple.          ///
 ///                                                                         ///
 /// This code is part of the Sharplike Roguelike library, and is licensed   ///
 /// under the Common Public Attribution License (CPAL), version 1.0. Use of ///
@@ -32,18 +32,20 @@ namespace Sharplike.Core.Rendering
         }
 
         private Size size;
-        public Size Size
+        public virtual Size Size
         {
             get
             {
                 return size;
             }
             set
-            {
+			{
+				InvalidateTiles();
                 this.ResizeRegion(value);
                 size = value;
                 if (this.Resize != null)
-                    this.Resize();
+					this.Resize();
+				InvalidateTiles();
             }
         }
 
@@ -56,10 +58,12 @@ namespace Sharplike.Core.Rendering
                 return this.location;
             }
             set
-            {
+			{
+				InvalidateTiles();
                 location = value;
                 if (this.Move != null)
-                    this.Move();
+					this.Move();
+				InvalidateTiles();
             }
         }
 
@@ -89,14 +93,13 @@ namespace Sharplike.Core.Rendering
         }
 
 		[NonSerialized]
-        private SortedDictionary<Int32, AbstractRegion> childRegions;
+        private SortedDictionary<Int32, AbstractRegion> childRegions = new SortedDictionary<int,AbstractRegion>();
 
         public AbstractRegion(Size size, Point location)
         {
             this.ZOrder = 0;
             this.Size = size;
             this.Location = location;
-            childRegions = new SortedDictionary<Int32, AbstractRegion>();
         }
 
 
@@ -106,6 +109,41 @@ namespace Sharplike.Core.Rendering
         /// <param name="dimensions">The new size.</param>
         private void ResizeRegion(Size dimensions)
         {
+			foreach (KeyValuePair<Int32, AbstractRegion> kvp in this.childRegions)
+			{
+				AbstractRegion child = kvp.Value;
+
+				Int32 childleft = child.Location.X;
+				Int32 childtop  = child.Location.Y;
+				Int32 childwidth = child.Size.Width;
+				Int32 childheight = child.Size.Height;
+
+				if ((child.RegionAnchor | Anchor.Top) == Anchor.Top)
+				{
+					if ((child.RegionAnchor | Anchor.Bottom) == Anchor.Bottom)
+						childheight += dimensions.Height - size.Height;
+				}
+				else
+				{
+					if ((child.RegionAnchor | Anchor.Bottom) == Anchor.Bottom)
+						childtop += dimensions.Height - size.Height;
+				}
+
+				if ((child.RegionAnchor | Anchor.Left) == Anchor.Left)
+				{
+					if ((child.RegionAnchor | Anchor.Right) == Anchor.Right)
+						childleft += dimensions.Width - size.Width;
+				}
+				else
+				{
+					if ((child.RegionAnchor | Anchor.Right) == Anchor.Right)
+						childwidth += dimensions.Width - size.Width;
+				}
+
+				child.Location = new Point(childleft, childtop);
+				child.Size = new Size(childwidth, childheight);
+			}
+
             if (parent != null)
             {
                 parent.InvalidateTiles(new Rectangle(this.location,
@@ -130,7 +168,7 @@ namespace Sharplike.Core.Rendering
 				}
 			}
 
-            regionTiles = newRegion;
+			regionTiles = newRegion;
         }
 
         /// <summary>
@@ -161,12 +199,12 @@ namespace Sharplike.Core.Rendering
         /// </param>
         public void InvalidateTiles(Rectangle region)
         {
-            for (Int32 y = 0; y < region.Height; ++y)
+            for (Int32 y = region.Top; y < region.Bottom; ++y)
 			{
-				if (y < 0 || y >= region.Height) continue;
-				for (Int32 x = 0; x < region.Width; ++x)
+				if (y < 0 || y >= Size.Height) continue;
+				for (Int32 x = region.Left; x < region.Right; ++x)
 				{
-					if (x < 0 || x >= region.Width) continue;
+					if (x < 0 || x >= Size.Width) continue;
 
 					if (this.regionTiles[x,y].displaytile != null)
 						this.regionTiles[x, y].displaytile.MakeStackDirty();
@@ -195,6 +233,7 @@ namespace Sharplike.Core.Rendering
         {
             this.AddRegion(childRegion, this.ChildRegions.Count + 1);
         }
+
         /// <summary>
         /// Adds the specified region as a child of this region. Enables
         /// you to specify the ZOrder for your regions.
@@ -334,6 +373,15 @@ namespace Sharplike.Core.Rendering
             }
         }
 
+		/// <summary>
+		/// Gets or sets the region's anchor setting within it's parent region.
+		/// </summary>
+		public Anchor RegionAnchor
+		{
+			get;
+			set;
+		}
+
 
         /// <summary>
         /// Compares Z-Ordering of two regions. Only provides semantically
@@ -384,5 +432,15 @@ namespace Sharplike.Core.Rendering
 				}
 			}
 		}
+	}
+
+	[Flags]
+	public enum Anchor
+	{
+		None = 0x0,
+		Top = 0x1,
+		Bottom = 0x2,
+		Left = 0x4,
+		Right = 0x8
 	}
 }

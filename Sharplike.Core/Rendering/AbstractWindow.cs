@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-/// Sharplike, The Open Roguelike Library (C) 2010 Ed Ropple.               ///
+/// Sharplike, The Open Roguelike Library (C) 2010 2010 Ed Ropple.          ///
 ///                                                                         ///
 /// This code is part of the Sharplike Roguelike library, and is licensed   ///
 /// under the Common Public Attribution License (CPAL), version 1.0. Use of ///
@@ -31,12 +31,23 @@ namespace Sharplike.Core.Rendering
 		/// <summary>
 		/// The dimensions of the render screen, in pixels.
 		/// </summary>
-		public readonly Size DisplayDimensions;
-		/// <summary>
-		/// The dimensions of the render screen, in tiles (based on the GlyphPalette
-		/// settings).
-		/// </summary>
-		public readonly Size TileDimensions;
+		public Size WindowSize
+		{
+			get { return displayDimensions; }
+			set
+			{
+				displayDimensions = value;
+
+				if (this.GlyphPalette == null)
+					return;
+
+				Int32 tileCols = this.WindowSize.Width / this.GlyphPalette.GlyphDimensions.Width;
+				Int32 tileRows = this.WindowSize.Height / this.GlyphPalette.GlyphDimensions.Height;
+
+				Size = new Size(tileCols, tileRows);
+			}
+		}
+		private Size displayDimensions;
 		/// <summary>
 		/// The GlyphPalette for the Window, containing details of the available tiles.
 		/// </summary>
@@ -60,17 +71,12 @@ namespace Sharplike.Core.Rendering
                 displayDimensions.Height / palette.GlyphDimensions.Height), new Point(0, 0))
 		{
 			this.GlyphPalette = palette;
-			this.DisplayDimensions = displayDimensions;
+			this.WindowSize = displayDimensions;
 
-			Int32 tileCols = this.DisplayDimensions.Width / this.GlyphPalette.GlyphDimensions.Width;
-			Int32 tileRows = this.DisplayDimensions.Height / this.GlyphPalette.GlyphDimensions.Height;
-
-			this.TileDimensions = new Size(tileCols, tileRows);
-
-			this.tiles = new DisplayTile[this.TileDimensions.Width, this.TileDimensions.Height];
-			for (Int32 x = 0; x < this.TileDimensions.Width; x++)
+			this.tiles = new DisplayTile[this.Size.Width, this.Size.Height];
+			for (Int32 x = 0; x < this.Size.Width; x++)
 			{
-				for (Int32 y = 0; y < this.TileDimensions.Height; y++)
+				for (Int32 y = 0; y < this.Size.Height; y++)
 				{
 					this.tiles[x, y] = new DisplayTile(this.GlyphPalette, this, new Point(x, y));
                     this.tiles[x, y].MakeStackDirty();
@@ -114,13 +120,7 @@ namespace Sharplike.Core.Rendering
 		/// </summary>
 		public void Invalidate()
 		{
-			for (Int32 x = 0; x < this.TileDimensions.Width; x++)
-			{
-				for (Int32 y = 0; y < this.TileDimensions.Height; y++)
-				{
-					tiles[x, y].MakeRenderDirty();
-				}
-			}
+			InvalidateTiles();
 		}
 
 
@@ -130,9 +130,9 @@ namespace Sharplike.Core.Rendering
 		/// </summary>
         public virtual void Update()
         {
-            for (Int32 x = 0; x < this.TileDimensions.Width; x++)
+            for (Int32 x = 0; x < this.Size.Width; x++)
             {
-                for (Int32 y = 0; y < this.TileDimensions.Height; y++)
+				for (Int32 y = 0; y < this.Size.Height; y++)
                 {
                     if (tiles[x, y].IsStackDirty)
                         tiles[x, y].RebuildRegionTiles();

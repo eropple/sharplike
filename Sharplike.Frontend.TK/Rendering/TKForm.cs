@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-/// Sharplike, The Open Roguelike Library (C) 2010 Ed Ropple.               ///
+/// Sharplike, The Open Roguelike Library (C) 2010 2010 Ed Ropple.          ///
 ///                                                                         ///
 /// This code is part of the Sharplike Roguelike library, and is licensed   ///
 /// under the Common Public Attribution License (CPAL), version 1.0. Use of ///
@@ -29,80 +29,24 @@ namespace Sharplike.Frontend.Rendering
 	/// </summary>
 	public class TKForm : Form
 	{
-		TKDisplayFunc LoadFunc;
-		TKDisplayFunc RenderFunc;
-		TKResizeFunc ResizeFunc;
-
-		public TKForm(TKDisplayFunc load, TKDisplayFunc render, TKResizeFunc resize)
+		public TKForm()
 		{
-			LoadFunc = load;
-			RenderFunc = render;
-			ResizeFunc = resize;
-
-			this.glControl1 = new TKGLControl();
-			this.SuspendLayout();
-			this.glControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.glControl1.BackColor = System.Drawing.Color.Green;
-			this.glControl1.Location = new System.Drawing.Point(0, 0);
-			this.glControl1.Name = "glControl1";
-			this.glControl1.Size = new System.Drawing.Size(629, 565);
-			this.glControl1.TabIndex = 0;
-			this.glControl1.VSync = false;
-			this.glControl1.Resize += new System.EventHandler(this.glControl1_Resize);
-			this.glControl1.Paint += new System.Windows.Forms.PaintEventHandler(this.glControl1_Paint);
-			this.glControl1.TabStop = false;
-			// 
 			// W01_First_Window
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.KeyPreview = true;
-			this.Controls.Add(this.glControl1);
 			this.Name = "W01_First_Window";
 			this.ResumeLayout(false);
 			this.FormBorderStyle = FormBorderStyle.FixedSingle;
+			this.MaximizeBox = false;
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.ResumeLayout(false);
 		}
 		protected override void Dispose(bool disposing)
 		{
 			base.Dispose(disposing);
 		}
-
-		public OpenTK.GLControl glControl1;
-
-
-		#region Events
-
-		protected override void OnLoad(EventArgs e)
-		{
-			base.OnLoad(e);
-
-			glControl1_Resize(this, EventArgs.Empty);   // Ensure the Viewport is set up correctly
-
-			LoadFunc();
-
-		}
-
-		private void glControl1_Paint(object sender, PaintEventArgs e)
-		{
-			glControl1.MakeCurrent();
-			//	   GL.Clear(ClearBufferMask.ColorBufferBit);
-
-			RenderFunc();
-
-			glControl1.SwapBuffers();
-		}
-
-		private void glControl1_Resize(object sender, EventArgs e)
-		{
-			if (glControl1.ClientSize.Height == 0)
-				glControl1.ClientSize = new System.Drawing.Size(glControl1.ClientSize.Width, 1);
-
-			GL.Viewport(0, 0, glControl1.ClientSize.Width, glControl1.ClientSize.Height);
-
-			ResizeFunc(glControl1.ClientSize.Width, glControl1.ClientSize.Height);
-		}
-		#endregion
 
 		private void InitializeComponent()
 		{

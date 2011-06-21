@@ -1,3 +1,10 @@
 glob:*/.svn/*
 glob:bin/*
 glob:obj/*
+syntax: glob
+.svn/*
+*/bin/*
+*/obj/*
+StyleCop.Cache
+Thumbs.db
+*.suo

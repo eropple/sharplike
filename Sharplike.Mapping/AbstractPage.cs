@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-/// Sharplike, The Open Roguelike Library (C) 2010 Ed Ropple.               ///
+/// Sharplike, The Open Roguelike Library (C) 2010 2010 Ed Ropple.          ///
 ///                                                                         ///
 /// This code is part of the Sharplike Roguelike library, and is licensed   ///
 /// under the Common Public Attribution License (CPAL), version 1.0. Use of ///
@@ -63,16 +63,16 @@ namespace Sharplike.Mapping
 		{
 			this.size = new Vector3(width, height, depth);
 			map = new AbstractSquare[size.x, size.y, size.x];
-			for (int x = 0; x < size.x; ++x)
+			/*for (int x = 0; x < size.x; ++x)
 			{
 				for (int y = 0; y < size.y; ++y)
 				{
 					for (int z = 0; z < size.z; ++z)
 					{
-						map[x, y, z] = new EmptySquare(x, y, z);
+						map[x, y, z] = new EmptySquare();
 					}
 				}
-			}
+			}*/
 
 			aiDispatchTable = new Dictionary<Int64, List<PageCallbackInfo>>();
 			this.lastCallTime = Game.Time;
@@ -143,11 +143,6 @@ namespace Sharplike.Mapping
 
 		public void SetSquare(Int32 x, Int32 y, Int32 z, AbstractSquare sq) { this.map[x, y, z] = sq; }
         public AbstractSquare GetSquare(Int32 x, Int32 y, Int32 z) { return this.map[x, y, z]; }
-		
-		public AbstractSquare LocateNeighbor(AbstractSquare s, Direction d)
-		{
-			return LocateNeighbor(s.Position, d);
-		}
 		
 		public AbstractSquare LocateNeighbor(Vector3 p, Direction d)
 		{

@@ -72,6 +72,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AbstractSquare.cs" />
     <Compile Include="BasicPage.cs" />
+    <Compile Include="Squares\StairsDownSquare.cs" />
+    <Compile Include="Squares\StairsUpSquare.cs" />
+    <Compile Include="Squares\FloorSquare.cs" />
+    <Compile Include="Squares\WallSquare.cs" />
     <Compile Include="Vector3.cs" />
     <Compile Include="ZColdCachingAlgorithm.cs" />
   </ItemGroup>

@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-/// Sharplike, The Open Roguelike Library (C) 2010 Ed Ropple.               ///
+/// Sharplike, The Open Roguelike Library (C) 2010 2010 Ed Ropple.          ///
 ///                                                                         ///
 /// This code is part of the Sharplike Roguelike library, and is licensed   ///
 /// under the Common Public Attribution License (CPAL), version 1.0. Use of ///
@@ -69,7 +69,7 @@ namespace Sharplike.Tests.Sandbox
 
 			gwin.Clear();
 
-			map = new MapStack(Game.RenderSystem.Window.Size, 20, 15, "SandboxMap");
+			map = new MapStack(Game.RenderSystem.Window.WindowSize, 20, 15, "SandboxMap");
 			map.AddPage(new YellowWallPage(map.PageSize), new Vector3(0, 0, 0));
 			map.AddPage(new YellowWallPage(map.PageSize), new Vector3(1, 0, 0));
 			map.AddPage(new YellowWallPage(map.PageSize), new Vector3(0, 1, 0));
@@ -139,7 +139,6 @@ namespace Sharplike.Tests.Sandbox
 					case "move_left":
 						cameraVector = new Vector3(cameraVector.x - 1,
 											cameraVector.y, cameraVector.z);
-						cameraVector = cameraVector + cameraVector;
 						cameraMoved = true;
 						break;
 					case "move_right":

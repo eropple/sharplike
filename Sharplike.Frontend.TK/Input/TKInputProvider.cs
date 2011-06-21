@@ -1,5 +1,5 @@
 ﻿///////////////////////////////////////////////////////////////////////////////
-/// Sharplike, The Open Roguelike Library (C) 2010 Ed Ropple.               ///
+/// Sharplike, The Open Roguelike Library (C) 2010 2010 Ed Ropple.          ///
 ///                                                                         ///
 /// This code is part of the Sharplike Roguelike library, and is licensed   ///
 /// under the Common Public Attribution License (CPAL), version 1.0. Use of ///
@@ -31,12 +31,12 @@ namespace Sharplike.Frontend.Input
             TKRenderSystem rsys = (TKRenderSystem)Game.RenderSystem;
             win = (TKWindow)rsys.Window;
 
-            win.Form.glControl1.MouseMove += new MouseEventHandler(Form_MouseMove);
-            win.Form.glControl1.KeyDown += new KeyEventHandler(Form_KeyDown);
-            win.Form.glControl1.KeyUp += new KeyEventHandler(Form_KeyUp);
-            win.Form.glControl1.MouseDown += new MouseEventHandler(Form_MouseDown);
-            win.Form.glControl1.MouseUp += new MouseEventHandler(Form_MouseUp);
-			win.Form.glControl1.MouseWheel += new MouseEventHandler(Form_MouseWheel);
+            win.Control.MouseMove += new MouseEventHandler(Form_MouseMove);
+			win.Control.KeyDown += new KeyEventHandler(Form_KeyDown);
+			win.Control.KeyUp += new KeyEventHandler(Form_KeyUp);
+			win.Control.MouseDown += new MouseEventHandler(Form_MouseDown);
+			win.Control.MouseUp += new MouseEventHandler(Form_MouseUp);
+			win.Control.MouseWheel += new MouseEventHandler(Form_MouseWheel);
         }
 
 		void Form_MouseWheel(object sender, MouseEventArgs e)
